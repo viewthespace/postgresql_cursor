@@ -113,7 +113,7 @@ module PostgreSQLCursor
         if ::ActiveRecord::VERSION::MAJOR < 4
           model = klass.send(:instantiate,row)
         else
-          @column_types ||= column_types
+          @column_types ||= column_types(klass)
           model = klass.send(:instantiate, row, @column_types)
         end
         block.call(model)
@@ -147,7 +147,7 @@ module PostgreSQLCursor
           if ::ActiveRecord::VERSION::MAJOR < 4
             model = klass.send(:instantiate, row)
           else
-            @column_types ||= column_types
+            @column_types ||= column_types(klass)
             model = klass.send(:instantiate, row, @column_types)
           end
         end
@@ -226,7 +226,7 @@ module PostgreSQLCursor
       row
     end
 
-    def column_types
+    def column_types(klass)
       return nil if ::ActiveRecord::VERSION::MAJOR < 4
       return @column_types if @column_types
 
@@ -244,6 +244,8 @@ module PostgreSQLCursor
           end
         end
       end
+
+      klass.attribute_types.each_key { |k| types.delete(k) }
 
       @column_types = types
     end
